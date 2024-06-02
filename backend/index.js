@@ -21,37 +21,36 @@ app.use(cors(corsOpts));
 app.get("/info", async (req, res) => {
   const url = req.query.url;
   let info, format, downloadLink;
-  if (url) {
-    info = await ytdl.getInfo(url);
+  try {
+    if (url) {
+      info = await ytdl.getInfo(url);
 
-    format = ytdl.chooseFormat(info.formats, { quality: "highest" });
-    downloadLink = format["url"];
-  } else {
-    downloadLink = "";
+      format = ytdl.chooseFormat(info.formats, { quality: "highest" });
+      downloadLink = format["url"];
+    } else {
+      downloadLink = "";
+    }
+    console.log(downloadLink);
+
+    res.json(info);
+  } catch (err) {
+    res.status(500).json({ message: "Invalid video URL" });
   }
-
-  console.log(downloadLink);
-
-  res.json(info);
 });
 
 app.get("/download", (req, res) => {
   const url = req.query.url;
   const quality = req.query.quality;
   let extension = quality.includes("audio") ? "mp3" : "mp4";
-  // const type = req.query.type
   try {
-    new URL(url);
+    res.header(
+      "Content-Disposition",
+      `attachment; filename="video.${extension}"`
+    );
+    ytdl(url, { quality: quality }).pipe(res);
   } catch (err) {
-    res.status(400).send("Invalid URL");
-    return;
+    res.status(500).send("Youtube Link error");
   }
-
-  res.header(
-    "Content-Disposition",
-    `attachment; filename="video.${extension}"`
-  );
-  ytdl(url, { quality: quality }).pipe(res);
 });
 
 app.listen(PORT, () => {
