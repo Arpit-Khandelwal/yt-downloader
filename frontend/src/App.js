@@ -7,19 +7,16 @@ import {
   Text,
   Heading,
   Input,
-  Button,
   Image,
   extendTheme,
-  Spinner,
   Skeleton,
-  Center,
-  Flex,
-  Stack,
-  Spacer,
+  Tabs,  TabList, TabPanels,TabPanel, Tab
 } from "@chakra-ui/react";
 import "@fontsource/cormorant-garamond";
 import "@fontsource/judson";
-import { MdAudiotrack, MdCloudDownload } from "react-icons/md";
+import DownloadGrid from "./DownloadGrid";
+import { Analytics } from "@vercel/analytics/react"
+
 
 // Extending theme to include custom fonts
 const theme = extendTheme({
@@ -31,34 +28,13 @@ const theme = extendTheme({
 
 const App = () => {
   const [url, setUrl] = useState("");
-  const [quality, setQuality] = useState("");
-
   const [title, setTitle] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
+  const [audio, setAudio] = useState([]);
+  const [video, setVideo] = useState([]);
 
   const [loading, setLoading] = useState(false);
 
-  const callBackend = async (event) => {
-    console.log("url from call backend: ", url);
-    const res = await fetch(
-      `http://192.168.29.157:3001/download?url=${encodeURIComponent(
-        url
-      )}&quality=${quality}`
-    );
-    if (!res.ok) {
-      console.error("Server error");
-      setTitle(res.status);
-      setThumbnailUrl("");
-      return;
-    }
-    const blob = await res.blob();
-    const urlObject = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = urlObject;
-    let extension = quality.includes("audio") ? "mp3" : "mp4";
-    link.download = `title.${extension}`; //todo: get video title from ytdl.getinfo
-    // link.click();
-  };
 
   const getDetails = async (event) => {
     setLoading(true);
@@ -70,23 +46,19 @@ const App = () => {
     setLoading(false);
     if (res.ok) {
       let thumbnailUrl =
-        data["player_response"]["videoDetails"]["thumbnail"]["thumbnails"];
+        data["player_response"]["videoDetails"]["thumbnail"]["thumbnails"] || "";
       thumbnailUrl = thumbnailUrl[thumbnailUrl.length - 1]["url"]; //todo: make adaptive based on device resolution
 
       setTitle(data["player_response"]["videoDetails"]["title"]);
       setThumbnailUrl(thumbnailUrl);
+      setAudio(data.formats.filter((item) => item.mimeType.includes("audio") ));
+      setVideo(data.formats.filter((item) => item.mimeType.includes("video") ));
     } else {
-      console.log(data);
+      console.log("Error:",data);
       setTitle(data["message"]);
       setThumbnailUrl("");
     }
   };
-
-  useEffect(() => {
-    if (url && quality) {
-      callBackend();
-    }
-  }, [quality]);
 
   useEffect(() => {
     if (url) {
@@ -96,6 +68,7 @@ const App = () => {
 
   return (
     <ChakraProvider theme={theme}>
+      <Analytics/>
       <Box
         maxW="3xl"
         mx="auto"
@@ -148,7 +121,6 @@ const App = () => {
                     <Image
                       src={thumbnailUrl}
                       alt="Video Thumbnail"
-                      // objectFit="cover"
                       w="full"
                       h="auto"
                       rounded="xl"
@@ -159,29 +131,20 @@ const App = () => {
                   )}
                   <Text fontSize="3xl">{title}</Text>
                 </Box>
-                {thumbnailUrl && (
-                  <Stack direction={["column", "row"]} spacing="1rem">
-                    {/* todo: center these buttons */}
-                    <Button
-                      margin="1rem"
-                      leftIcon={<MdAudiotrack />}
-                      colorScheme="teal"
-                      size="lg"
-                      onClick={() => setQuality("highestaudio")}
-                    >
-                      Audio
-                    </Button>
-                    <Button
-                      margin="1rem"
-                      leftIcon={<MdCloudDownload />}
-                      colorScheme="teal"
-                      size="lg"
-                      onClick={() => setQuality("highest")}
-                    >
-                      Video
-                    </Button>
-                  </Stack>
-                )}
+                <Tabs variant="soft-rounded" colorScheme="teal">
+                  <TabList>
+                    <Tab>Audio</Tab>
+                    <Tab>Video</Tab>
+                  </TabList>
+                  <TabPanels>
+                    <TabPanel>
+                      <DownloadGrid media={audio}  />
+                    </TabPanel>
+                    <TabPanel>
+                      <DownloadGrid media={video}/>
+                    </TabPanel>
+                  </TabPanels>
+                </Tabs>
               </Box>
             </Skeleton>
           )}
