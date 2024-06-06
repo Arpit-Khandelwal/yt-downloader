@@ -1,13 +1,13 @@
 import {  Text, Link, Box, Stack } from "@chakra-ui/react";
 
-const DownloadGrid = ({ media }) => {
-  const download = async (event) => {};
+const DownloadGrid = ({ media }: any) => {
+  const download = async (event: any) => {};
   
   const sortedMedia = [...media].sort((a, b) => b.contentLength - a.contentLength);
 
 
   return (
-    <Stack templateColumns="repeat(auto-fill, minmax(200px, 1fr))" gap={6}>
+    <Stack gridTemplateColumns="repeat(auto-fill, minmax(200px, 1fr))" gap={6}>
       {sortedMedia.map(({ qualityLabel, contentLength, container, url }, index) => (
         <Box
         //   as="datalist"
