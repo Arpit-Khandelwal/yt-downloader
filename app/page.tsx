@@ -1,4 +1,5 @@
-// app.jsx
+'use client'
+
 import React from "react";
 import { useState, useEffect } from "react";
 import {
@@ -14,7 +15,7 @@ import {
 } from "@chakra-ui/react";
 import "@fontsource/cormorant-garamond";
 import "@fontsource/judson";
-import DownloadGrid from "./DownloadGrid";
+import DownloadGrid from "./downloadGrid";
 import { Analytics } from "@vercel/analytics/react"
 
 
@@ -36,7 +37,7 @@ const App = () => {
   const [loading, setLoading] = useState(false);
 
 
-  const getDetails = async (event) => {
+  const getDetails = async () => {
     setLoading(true);
     const res = await fetch(
       `http://192.168.29.157:3001/info?url=${encodeURIComponent(url)}`
@@ -51,10 +52,10 @@ const App = () => {
 
       setTitle(data["player_response"]["videoDetails"]["title"]);
       setThumbnailUrl(thumbnailUrl);
-      setAudio(data.formats.filter((item) => item.mimeType.includes("audio") ));
-      setVideo(data.formats.filter((item) => item.mimeType.includes("video") ));
+      setAudio(data.formats.filter((item: any) => item.mimeType.includes("audio")));
+      setVideo(data.formats.filter((item: any) => item.mimeType.includes("video")));
     } else {
-      console.log("Error:",data);
+      console.log("Error:", data);
       setTitle(data["message"]);
       setThumbnailUrl("");
     }
