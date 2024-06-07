@@ -1,7 +1,7 @@
+// components/DownloadApp.js
 'use client'
 
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChakraProvider,
   Box,
@@ -11,13 +11,16 @@ import {
   Image,
   extendTheme,
   Skeleton,
-  Tabs, TabList, TabPanels, TabPanel, Tab
+  Tabs,
+  TabList,
+  TabPanels,
+  TabPanel,
+  Tab
 } from "@chakra-ui/react";
 import "@fontsource/cormorant-garamond";
 import "@fontsource/judson";
-import DownloadGrid from "./downloadGrid";
-import { Analytics } from "@vercel/analytics/react"
-import ytdl from "ytdl-core";
+import DownloadGrid from "./DownloadGrid";
+import { Analytics } from "@vercel/analytics/react";
 
 // Extending theme to include custom fonts
 const theme = extendTheme({
@@ -27,59 +30,40 @@ const theme = extendTheme({
   },
 });
 
-const App = () => {
+const DownloadApp = () => {
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [audio, setAudio] = useState([]);
   const [video, setVideo] = useState([]);
-
   const [loading, setLoading] = useState(false);
 
-
-  const getDetails = async (url: string) => {
+  const getDetails = async () => {
     setLoading(true);
-    let info: any;
+    const res = await fetch(`/api/info?url=${encodeURIComponent(url)}`);
 
-    if (url) {
-      // info = await ytdl.getInfo(url);
-      const res = await fetch(`/api/info?url=${encodeURIComponent(url)}`);
-      info = await res.json()
-    } else {
-      info = "";
-    }
-    
-    console.log("info: ", info)
+    let data = await res.json();
     setLoading(false);
-    if (info) {
-      let thumbnails = info?.player_response?.videoDetails?.thumbnail?.thumbnails;
-      console.log("Thumbnails: ", thumbnails) 
-      let thumbnailUrl = thumbnails?.length ? thumbnails[thumbnails.length - 1].url : "";
-      console.log("Video details: ", info?.player_response?.videoDetails)
-      const videoDetails = info?.player_response?.videoDetails;
-      if (videoDetails) {
-        setTitle(videoDetails.title);
-        console.log("Title: ",title)
-        setThumbnailUrl(thumbnailUrl);
-        console.log("Thumbnail URL: ", thumbnailUrl)
-        const formats = info.formats || [];
-        console.log("Formats: ", formats)
-        setAudio(formats.filter((item: any) => item.mimeType.includes("audio")));
-        setVideo(formats.filter((item: any) => item.mimeType.includes("video")));
-        console.log("Audio: ", audio)
-        console.log("Video: ", video)
-      } else {
-        console.error("Video details not found.");
-      }
+    if (res.ok) {
+      let thumbnailUrl =
+        data["player_response"]["videoDetails"]["thumbnail"]["thumbnails"] || "";
+      thumbnailUrl = thumbnailUrl[thumbnailUrl.length - 1]["url"];
+
+      setTitle(data["player_response"]["videoDetails"]["title"]);
+      setThumbnailUrl(thumbnailUrl);
+      setAudio(data.formats.filter((item) => item.mimeType.includes("audio")));
+      setVideo(data.formats.filter((item) => item.mimeType.includes("video")));
     } else {
-      console.log("Error:", info);
-      setTitle(info["message"]);
+      console.log("Error:", data);
+      setTitle(data["message"]);
       setThumbnailUrl("");
     }
   };
 
   useEffect(() => {
-    getDetails(url);
+    if (url) {
+      getDetails();
+    }
   }, [url]);
 
   return (
@@ -126,12 +110,7 @@ const App = () => {
 
           {title && (
             <Skeleton isLoaded={!loading}>
-              <Box
-                // display="grid"
-                // gridTemplateColumns={{ base: "1fr", sm: "1fr 1fr" }}
-                // gap={4}
-                w="full"
-              >
+              <Box w="full">
                 <Box>
                   {thumbnailUrl && (
                     <Image
@@ -170,4 +149,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default DownloadApp;

@@ -1,7 +1,7 @@
 import {  Text, Link, Box, Stack } from "@chakra-ui/react";
 
-const DownloadGrid = ({ media }: any) => {
-  const download = async (event: any) => {
+const DownloadGrid = ({ media }) => {
+  const download = async (event) => {
     event.preventDefault();
     const url = event.target.href;
     const res = await fetch(url);
