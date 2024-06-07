@@ -2,19 +2,19 @@ import { NextApiRequest, NextApiResponse } from "next";
 import ytdl from "ytdl-core";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const url = req.query.url;
-  let info, format, downloadLink;
-  try {
-    if (url) {
-      info = await ytdl.getInfo(url as string);
+    let info;
+    try {
+        if (url) {
+            info = await ytdl.getInfo(url as string);
 
-      
-    } else {
-      info = "";
+
+        } else {
+            info = "";
+        }
+
+        res.json(info);
+    } catch (err) {
+        res.status(500).json({ message: "Invalid video URL" });
     }
-
-    res.json(info);
-  } catch (err) {
-    res.status(500).json({ message: "Invalid video URL" });
-  }
-  }
+}
 

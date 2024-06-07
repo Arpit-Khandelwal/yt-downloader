@@ -17,7 +17,6 @@ import "@fontsource/cormorant-garamond";
 import "@fontsource/judson";
 import DownloadGrid from "./downloadGrid";
 import { Analytics } from "@vercel/analytics/react"
-import ytdl from "ytdl-core";
 
 // Extending theme to include custom fonts
 const theme = extendTheme({
@@ -49,25 +48,18 @@ const App = () => {
       info = "";
     }
     
-    console.log("info: ", info)
     setLoading(false);
     if (info) {
       let thumbnails = info?.player_response?.videoDetails?.thumbnail?.thumbnails;
-      console.log("Thumbnails: ", thumbnails) 
       let thumbnailUrl = thumbnails?.length ? thumbnails[thumbnails.length - 1].url : "";
-      console.log("Video details: ", info?.player_response?.videoDetails)
       const videoDetails = info?.player_response?.videoDetails;
       if (videoDetails) {
         setTitle(videoDetails.title);
-        console.log("Title: ",title)
         setThumbnailUrl(thumbnailUrl);
-        console.log("Thumbnail URL: ", thumbnailUrl)
         const formats = info.formats || [];
-        console.log("Formats: ", formats)
         setAudio(formats.filter((item: any) => item.mimeType.includes("audio")));
-        setVideo(formats.filter((item: any) => item.mimeType.includes("video")));
-        console.log("Audio: ", audio)
-        console.log("Video: ", video)
+        setVideo(formats.filter((item: any) => item.mimeType.includes("video") && item.hasAudio));
+        // console.log("video: ",video)
       } else {
         console.error("Video details not found.");
       }
@@ -154,10 +146,10 @@ const App = () => {
                   </TabList>
                   <TabPanels>
                     <TabPanel>
-                      <DownloadGrid media={audio} />
+                      <DownloadGrid media={audio} video_url={url} />
                     </TabPanel>
                     <TabPanel>
-                      <DownloadGrid media={video} />
+                      <DownloadGrid media={video} video_url={url} title={title} />
                     </TabPanel>
                   </TabPanels>
                 </Tabs>

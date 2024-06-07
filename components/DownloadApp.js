@@ -52,7 +52,7 @@ const DownloadApp = () => {
       setTitle(data["player_response"]["videoDetails"]["title"]);
       setThumbnailUrl(thumbnailUrl);
       setAudio(data.formats.filter((item) => item.mimeType.includes("audio")));
-      setVideo(data.formats.filter((item) => item.mimeType.includes("video")));
+      setVideo(data.formats.filter((item) => item.mimeType.includes("video") && item.hasAudio));
     } else {
       console.log("Error:", data);
       setTitle(data["message"]);

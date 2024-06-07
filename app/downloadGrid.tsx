@@ -1,51 +1,57 @@
-import {  Text, Link, Box, Stack } from "@chakra-ui/react";
+import { Text, Link, Box, Stack, Button } from "@chakra-ui/react";
 
-const DownloadGrid = ({ media }: any) => {
-  const download = async (event: any) => {
-    event.preventDefault();
-    const url = event.target.href;
-    const res = await fetch(url);
-    const blob = await res.blob();
-    const link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
-    link.download = 'video.mp4'; // or 'video.mp3' based on the type
-    link.click();
-  };
-  
-  const sortedMedia = [...media].sort((a, b) => b.contentLength - a.contentLength);
+const DownloadGrid = ({ media, video_url, title }: any) => {
+    const download = async (e: any, container: string,  itag: number) => {
+        try {
+            
+            // console.log(`/api/download?url=${video_url}&itag=${itag}&extension=${container}`)
+            // alert('are you sure you want to download this?')
+            let res = await fetch(`/api/download?url=${video_url}&itag=${itag}&extension=${container}`)
+            if (res.ok) {
+                const blob = await res.blob();
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = `${title}.${container}`
+                link.click();
+            }
 
+        } catch (error) {
+            console.error(error);
 
-  return (
-    <Stack gridTemplateColumns="repeat(auto-fill, minmax(200px, 1fr))" gap={6}>
-      {sortedMedia.map(({ qualityLabel, contentLength, container, url }, index) => (
-        <Box
-        //   as="datalist"
-          key={index}
-          bg="white"
-          p={4}
-          rounded="md"
-          boxShadow="md"
-        >
-          {qualityLabel && (
-            <Text fontSize="lg" mb={2}>
-              Quality: {qualityLabel}
-            </Text>
-          )}
-          {contentLength && (
-            <Text fontSize="lg" mb={2}>
-              Size: {(contentLength / 1_000_000).toFixed(1)} MB
-            </Text>
-          )}
-          <Text fontSize="lg" mb={2}>
-            Type: {container}
-          </Text>
-          <Link href={`/api/download?url=${encodeURIComponent(url)}&quality=${qualityLabel}`} color="teal.500" onClick={download}>
-            Download
-          </Link>
-        </Box>
-      ))}
-    </Stack>
-  );
+        }
+    };
+    const sortedMedia = [...media].sort((a, b) => b.contentLength - a.contentLength);
+
+    return (
+        <Stack gridTemplateColumns="repeat(auto-fill, minmax(200px, 1fr))" gap={6}>
+            {sortedMedia.map(({ qualityLabel, contentLength, container, itag }, index) => (
+                <Box
+                    key={index}
+                    bg="white"
+                    p={4}
+                    rounded="md"
+                    boxShadow="md"
+                >
+                    {qualityLabel && (
+                        <Text fontSize="lg" mb={2}>
+                            Quality: {qualityLabel}
+                        </Text>
+                    )}
+                    {contentLength && (
+                        <Text fontSize="lg" mb={2}>
+                            Size: {(contentLength / 1_000_000).toFixed(1)} MB
+                        </Text>
+                    )}
+                    <Text fontSize="lg" mb={2}>
+                        Type: {container}
+                    </Text>
+                    <Button color="teal.500" onClick={(e) => download(e, container, itag)}>
+                        Download
+                    </Button>
+                </Box>
+            ))}
+        </Stack>
+    );
 };
 
 export default DownloadGrid;
