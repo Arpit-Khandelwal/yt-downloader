@@ -17,6 +17,7 @@ import "@fontsource/cormorant-garamond";
 import "@fontsource/judson";
 import DownloadGrid from "./downloadGrid";
 import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 // Extending theme to include custom fonts
 const theme = extendTheme({
@@ -77,6 +78,7 @@ const App = () => {
   return (
     <ChakraProvider theme={theme}>
       <Analytics />
+      <SpeedInsights />
       <Box
         maxW="3xl"
         mx="auto"
