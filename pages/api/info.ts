@@ -16,6 +16,7 @@ export default async function handler(
 
     res.json({ formats: info.formats, player_response: info.player_response });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ message: "Invalid video URL" });
   }
 }
