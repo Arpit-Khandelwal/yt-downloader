@@ -1,34 +1,38 @@
 "use client";
-import { Text, Link, Box, Stack, Button } from "@chakra-ui/react";
-import { URL } from "url";
+import { Text, Link, Box, Stack, Button, Grid } from "@chakra-ui/react";
+import { useEffect } from "react";
 
-const DownloadGrid = ({ media, name }: any) => {
+
+
+const DownloadGrid = ({ media, url,setDownloadId }: any) => {
+
+  const start = async function initiateDownload() {
+    const res = await fetch(`https://ytdl.socialplug.io/api/start-download?url=${encodeURIComponent(url)}&quality=${media}`);
+    const resJson = await res.json();
+    const downloadId = resJson.download_id;
+    setDownloadId(downloadId);
+}
+
   return (
-    <Stack
-      gridTemplateColumns="repeat(auto-fill, minmax(200px, 1fr))"
-      margin={2}
+    <Grid
+      templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }}
+      gap={4}
+      padding={2}
     >
-      <Box bg="white" p={4} rounded="md" boxShadow="md">
-        {media.qualityLabel && (
-          <Text fontSize="lg" mb={2}>
-            Quality: {media.qualityLabel}
-          </Text>
+      <Box bg="white" p={2} rounded="md" boxShadow="md" flexDir="row">
+        {media && (
+          <>
+            <Text fontSize="lg" display="inline" mr={2}>
+              {media}
+            </Text>
+            <Button color="teal.500" display="inline" onClick={start}>
+                Download
+
+            </Button>
+          </>
         )}
-        {media.contentLength && (
-          <Text fontSize="lg" mb={2}>
-            Size: {(media.contentLength / 1_000_000).toFixed(1)} MB
-          </Text>
-        )}
-        <Text fontSize="lg" mb={2}>
-          Type: {media.container}
-        </Text>
-        <Button color="teal.500">
-          <Link href={media.url} isExternal>
-            Download
-          </Link>
-        </Button>
       </Box>
-    </Stack>
+    </Grid>
   );
 };
 

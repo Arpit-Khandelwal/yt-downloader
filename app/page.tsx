@@ -17,6 +17,7 @@ import {
   Tab,
   Button,
   Spinner,
+  Link,
 } from "@chakra-ui/react";
 import "@fontsource/cormorant-garamond";
 import "@fontsource/judson";
@@ -24,7 +25,6 @@ import DownloadGrid from "./downloadGrid";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import ytdl from "ytdl-core";
-
 import { extendTheme, type ThemeConfig } from "@chakra-ui/react";
 
 // Extending theme to include custom fonts
@@ -44,60 +44,70 @@ const App = () => {
 
   const [loading, setLoading] = useState(false);
 
+  const [downloadId, setDownloadId] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [downloadUrl, setDownloadUrl] = useState("");
   // const { colorMode, toggleColorMode } = useColorMode();
+  const getDetails = async (url: string) => {
+    setLoading(true);
+    let info: any = {};
+
+    if (url) {
+      // info = await ytdl.getInfo(url);
+      const res = await fetch(`https://ytdl.socialplug.io/api/video-info?url=${encodeURIComponent(url)}`);
+      // try {
+      //   console.log(url)
+      //   info = await ytdl.getInfo(url as string);
+      // } catch (error) {
+      //   console.log("lmao: ",error)
+      // }
+      info = await res.json();
+    }
+
+    setLoading(false);
+    if (info) {
+      let thumbnailUrl = info.image
+      const videoDetails = { ...info.title }
+      if (videoDetails) {
+        setTitle(info.title);
+        setThumbnailUrl(thumbnailUrl);
+        const formats = info.format_options || [];
+        setAudio(
+          formats.audio.mp3
+        );
+        setVideo(
+          formats.video.mp4
+        );
+      } else {
+        console.error("Video details not found.");
+      }
+    } else {
+      console.log("Error:", info);
+      setTitle(info["message"]);
+      setThumbnailUrl("");
+    }
+    console.log("video: ", video);
+    console.log("audio: ", audio);
+  };
+
+  async function getProgess() {
+    if (!downloadId) return;
+    const interval = setInterval(async () => {
+      const res = await fetch(`https://ytdl.socialplug.io/api/get-download?download_id=${downloadId}`);
+      const resJson = await res.json();
+      setProgress(resJson.progress / 10);
+      if (resJson.download_url) {
+        progress === 100 ;
+        clearInterval(interval);
+      }
+      setDownloadUrl(resJson.download_url);
+    }, 2000);
+
+  }
 
   useEffect(() => {
-    const getDetails = async (url: string) => {
-      setLoading(true);
-      let info: any;
-
-      if (url) {
-        // info = await ytdl.getInfo(url);
-        const res = await fetch(`/api/info?url=${encodeURIComponent(url)}`);
-        // try {
-        //   console.log(url)
-        //   info = await ytdl.getInfo(url as string);
-        // } catch (error) {
-        //   console.log("lmao: ",error)
-        // }
-        info = await res.json();
-      } else {
-        info = "";
-      }
-
-      setLoading(false);
-      if (info) {
-        let thumbnails =
-          info?.player_response?.videoDetails?.thumbnail?.thumbnails;
-        let thumbnailUrl = thumbnails?.length
-          ? thumbnails[thumbnails.length - 1].url
-          : "";
-        const videoDetails = info?.player_response?.videoDetails;
-        if (videoDetails) {
-          setTitle(videoDetails.title);
-          setThumbnailUrl(thumbnailUrl);
-          const formats = info.formats || [];
-          setAudio(
-            formats.filter((item: any) => item.mimeType.includes("audio"))
-          );
-          setVideo(
-            formats.filter(
-              (item: any) => item.mimeType.includes("video") && item.hasAudio
-            )
-          );
-          console.log("video: ", video);
-          console.log("audio: ", audio);
-        } else {
-          console.error("Video details not found.");
-        }
-      } else {
-        console.log("Error:", info);
-        setTitle(info["message"]);
-        setThumbnailUrl("");
-      }
-    };
-    getDetails(url);
-  }, [url]);
+    getProgess();
+  }, [downloadId]);
 
   return (
     <ChakraProvider theme={theme}>
@@ -141,6 +151,10 @@ const App = () => {
             alignContent={"center"}
             margin={"2rem"}
           />
+          <Button colorScheme="red" size="lg" onClick={() => getDetails(url)} >Submit </Button>
+
+
+
           {loading ? (
             <Spinner size="xl" />
           ) : (
@@ -166,6 +180,12 @@ const App = () => {
                   )}
                   <Text fontSize="3xl">{title}</Text>
                 </Box>
+                {downloadId && (
+                  <Box>
+                    {progress < 100 && <Text>Downloading: {progress}%</Text>}
+                    {downloadUrl && <Link href={downloadUrl} isExternal>Download</Link>}
+                  </Box>
+                )}
                 <Tabs variant="soft-rounded" colorScheme="teal">
                   <TabList>
                     <Tab>Audio</Tab>
@@ -173,15 +193,15 @@ const App = () => {
                   </TabList>
                   <TabPanels>
                     <TabPanel>
-                      {audio &&
+                      {audio.length &&
                         audio.map((element, index) => (
-                          <DownloadGrid key={index} media={element} name=""/>
+                          <DownloadGrid key={index} media={element} url={url} setDownloadId={setDownloadId} />
                         ))}
                     </TabPanel>
                     <TabPanel>
-                      {video &&
+                      {video.length &&
                         video.map((element, index) => (
-                          <DownloadGrid key={index} media={element} name=""/>
+                          <DownloadGrid key={index} media={element} url={url} setDownloadId={setDownloadId} />
                         ))}
                     </TabPanel>
                   </TabPanels>

@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { format } from "path";
-import ytdl from "ytdl-core";
+import ytdl from "@distube/ytdl-core"
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -14,7 +13,7 @@ export default async function handler(
       info = { formats: [], player_response: [] };
     }
 
-    res.json({ formats: info.formats, player_response: info.player_response });
+    res.json(info);
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Invalid video URL" });
