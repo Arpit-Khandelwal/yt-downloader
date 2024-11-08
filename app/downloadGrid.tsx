@@ -17,11 +17,13 @@ const DownloadGrid = ({ media, url }: any) => {
     const resJson = await res.json();
     const downloadId = resJson.download_id;
     setDownloadId(downloadId);
-    await getProgess();
+    getProgess(downloadId);
   }
-  async function getProgess() {
+  async function getProgess(downloadId:string) {
+    console.log("inside get progress with downloadId "+downloadId)
     if (!downloadId) return;
     const interval = setInterval(async () => {
+      console.log("inside interval")
       const res = await fetch(`https://ytdl.socialplug.io/api/get-download?download_id=${downloadId}`);
       const resJson = await res.json();
       if (resJson.download_url) {
@@ -29,10 +31,11 @@ const DownloadGrid = ({ media, url }: any) => {
         clearInterval(interval);
         setDownloadUrl(resJson.download_url);
         setMessage("Download");
+        return;
       }
       setProgress(resJson.progress / 10);
-      setMessage(progress + "%");
-    }, 2000);
+      setMessage(`${progress} %`);
+    }, 500);
 
   }
 
@@ -54,7 +57,7 @@ const DownloadGrid = ({ media, url }: any) => {
                 !downloadUrl ? (
                   <> {message} </>
                 ) : (
-                  <Link href={downloadUrl} download/>
+                  <Link href={downloadUrl} />
                 )
               }
             </Button>
