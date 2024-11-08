@@ -44,9 +44,7 @@ const App = () => {
 
   const [loading, setLoading] = useState(false);
 
-  const [downloadId, setDownloadId] = useState("");
-  const [progress, setProgress] = useState(0);
-  const [downloadUrl, setDownloadUrl] = useState("");
+ 
   // const { colorMode, toggleColorMode } = useColorMode();
   const getDetails = async (url: string) => {
     setLoading(true);
@@ -90,24 +88,7 @@ const App = () => {
     console.log("audio: ", audio);
   };
 
-  async function getProgess() {
-    if (!downloadId) return;
-    const interval = setInterval(async () => {
-      const res = await fetch(`https://ytdl.socialplug.io/api/get-download?download_id=${downloadId}`);
-      const resJson = await res.json();
-      setProgress(resJson.progress / 10);
-      if (resJson.download_url) {
-        progress === 100 ;
-        clearInterval(interval);
-      }
-      setDownloadUrl(resJson.download_url);
-    }, 2000);
-
-  }
-
-  useEffect(() => {
-    getProgess();
-  }, [downloadId]);
+  
 
   return (
     <ChakraProvider theme={theme}>
@@ -158,7 +139,7 @@ const App = () => {
           {loading ? (
             <Spinner size="xl" />
           ) : (
-            title && (
+            thumbnailUrl && (
               <Box
                 // display="grid"
                 // gridTemplateColumns={{ base: "1fr", sm: "1fr 1fr" }}
@@ -180,12 +161,7 @@ const App = () => {
                   )}
                   <Text fontSize="3xl">{title}</Text>
                 </Box>
-                {downloadId && (
-                  <Box>
-                    {progress < 100 && <Text>Downloading: {progress}%</Text>}
-                    {downloadUrl && <Link href={downloadUrl} isExternal>Download</Link>}
-                  </Box>
-                )}
+                
                 <Tabs variant="soft-rounded" colorScheme="teal">
                   <TabList>
                     <Tab>Audio</Tab>
@@ -195,13 +171,13 @@ const App = () => {
                     <TabPanel>
                       {audio.length &&
                         audio.map((element, index) => (
-                          <DownloadGrid key={index} media={element} url={url} setDownloadId={setDownloadId} />
+                          <DownloadGrid key={index} media={element} url={url}  />
                         ))}
                     </TabPanel>
                     <TabPanel>
                       {video.length &&
                         video.map((element, index) => (
-                          <DownloadGrid key={index} media={element} url={url} setDownloadId={setDownloadId} />
+                          <DownloadGrid key={index} media={element} url={url}  />
                         ))}
                     </TabPanel>
                   </TabPanels>
