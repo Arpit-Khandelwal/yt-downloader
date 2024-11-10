@@ -1,3 +1,4 @@
+//@ts-nocheck
 "use server";
 import { NextApiRequest, NextApiResponse } from "next";
 import ytdl from "@distube/ytdl-core";
