@@ -2,8 +2,6 @@
 import { Text, Link, Box, Stack, Button, Grid } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
-
-
 const DownloadGrid = ({ media, url }: any) => {
 
   const [downloadId, setDownloadId] = useState("");

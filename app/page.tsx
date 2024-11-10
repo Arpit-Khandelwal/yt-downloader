@@ -9,23 +9,17 @@ import {
   Heading,
   Input,
   Image,
-  Skeleton,
-  Tabs,
-  TabList,
-  TabPanels,
-  TabPanel,
-  Tab,
   Button,
   Spinner,
-  Link,
+  Center,
 } from "@chakra-ui/react";
 import "@fontsource/cormorant-garamond";
 import "@fontsource/judson";
-import DownloadGrid from "./downloadGrid";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import ytdl from "ytdl-core";
+
 import { extendTheme, type ThemeConfig } from "@chakra-ui/react";
+import DownloadButtons from "./components/DownloadButtons";
 
 // Extending theme to include custom fonts
 const theme = extendTheme({
@@ -42,53 +36,29 @@ const App = () => {
   const [audio, setAudio] = useState([]);
   const [video, setVideo] = useState([]);
 
+  const [toggleOptions, setToogleOptions] = useState(false);
+
   const [loading, setLoading] = useState(false);
 
- 
-  // const { colorMode, toggleColorMode } = useColorMode();
-  const getDetails = async (url: string) => {
-    setLoading(true);
-    let info: any = {};
 
-    if (url) {
-      // info = await ytdl.getInfo(url);
-      const res = await fetch(`https://ytdl.socialplug.io/api/video-info?url=${encodeURIComponent(url)}`);
-      // try {
-      //   console.log(url)
-      //   info = await ytdl.getInfo(url as string);
-      // } catch (error) {
-      //   console.log("lmao: ",error)
-      // }
-      info = await res.json();
-    }
+  const getDetails = async (url: string) => {
+
+    setLoading(true);
+
+    const res = await fetch("/api/info?url=" + encodeURIComponent(url)).then((res) => res.json());
+    console.log(res);
+
+    setTitle(res.videoDetails.title);
+    setThumbnailUrl(res.videoDetails.thumbnails[res.videoDetails.thumbnails.length - 1].url);
+
+
+
 
     setLoading(false);
-    if (info) {
-      let thumbnailUrl = info.image
-      const videoDetails = { ...info.title }
-      if (videoDetails) {
-        setTitle(info.title);
-        setThumbnailUrl(thumbnailUrl);
-        const formats = info.format_options || [];
-        setAudio(
-          formats.audio.mp3
-        );
-        setVideo(
-          formats.video.mp4
-        );
-      } else {
-        console.error("Video details not found.");
-      }
-    } else {
-      console.log("Error:", info);
-      setTitle(info["message"]);
-      setThumbnailUrl("");
-    }
-    console.log("video: ", video);
-    console.log("audio: ", audio);
-  };
 
-  
+  }
+
+
 
   return (
     <ChakraProvider theme={theme}>
@@ -129,8 +99,7 @@ const App = () => {
             onChange={async (e) => {
               setUrl(e.target.value);
             }}
-            alignContent={"center"}
-            margin={"2rem"}
+          // margin={"2rem"}
           />
           <Button colorScheme="red" size="lg" onClick={() => getDetails(url)} >Submit </Button>
 
@@ -144,44 +113,29 @@ const App = () => {
                 // display="grid"
                 // gridTemplateColumns={{ base: "1fr", sm: "1fr 1fr" }}
                 // gap={4}
+                alignContent="center"
                 w="full"
               >
-                <Box>
-                  {thumbnailUrl && (
-                    <Image
-                      src={thumbnailUrl}
-                      alt="Video Thumbnail"
-                      w="full"
-                      h="auto"
-                      rounded="xl"
-                      bg="white"
-                      _dark={{ bg: "gray.950" }}
-                      boxSize={"auto"}
-                    />
-                  )}
-                  <Text fontSize="3xl">{title}</Text>
-                </Box>
-                
-                <Tabs variant="soft-rounded" colorScheme="teal">
-                  <TabList>
-                    <Tab>Audio</Tab>
-                    <Tab>Video</Tab>
-                  </TabList>
-                  <TabPanels>
-                    <TabPanel>
-                      {audio.length &&
-                        audio.map((element, index) => (
-                          <DownloadGrid key={index} media={element} url={url}  />
-                        ))}
-                    </TabPanel>
-                    <TabPanel>
-                      {video.length &&
-                        video.map((element, index) => (
-                          <DownloadGrid key={index} media={element} url={url}  />
-                        ))}
-                    </TabPanel>
-                  </TabPanels>
-                </Tabs>
+                <Center>
+                  <Box>
+                    {thumbnailUrl && (
+                      <Image
+                        src={thumbnailUrl}
+                        alt="Video Thumbnail"
+                        w="full"
+                        h="auto"
+                        rounded="xl"
+                        bg="white"
+                        _dark={{ bg: "gray.950" }}
+                        boxSize={"auto"}
+                      />
+                    )}
+                    <Text fontSize="3xl" textAlign="center">{title}</Text>
+
+                  </Box>
+                </Center>
+                <DownloadButtons toggleOptions={toggleOptions} setToogleOptions={setToogleOptions} url={url} />
+
               </Box>
             )
           )}
