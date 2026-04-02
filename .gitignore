@@ -35,3 +35,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 bun.lockb
+*player-script.js
+*.mp4

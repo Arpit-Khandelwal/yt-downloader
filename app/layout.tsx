@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import Providers from "@/app/providers";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
-
 export const metadata: Metadata = {
-  title: "Free YouTube Video Downloader - Fast and Easy",
-  description: "Download YouTube videos quickly and easily in high quality. Try our free YouTube video downloader today!",
+  title: "Adaptive Downloader Control Center",
+  description:
+    "Production-ready adaptive YouTube downloader: direct delivery first, browser merge second, quota-controlled fallback last.",
+  openGraph: {
+    title: "Adaptive Downloader Control Center",
+    description:
+      "Analyze a YouTube URL, inspect formats, and route downloads through direct, client-merge, or guarded fallback paths.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -15,8 +22,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <Providers>{children}</Providers>
+        <Analytics />
+        <SpeedInsights />
+      </body>
     </html>
   );
 }
